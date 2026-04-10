@@ -2,175 +2,205 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Albion Professional Crafter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Albion Crafting Pro Dashboard</title>
     <style>
         :root { --gold: #c99c5c; --bg: #0c0c0e; --card: #18181b; --border: #27272a; --text: #f4f4f5; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        .main-container { width: 100%; max-width: 1100px; display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
-        .sidebar, .content { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 1100px; display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+        .panel { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; }
         
         /* Search & Filters */
-        .search-box { width: 100%; padding: 12px; background: #27272a; border: 1px solid var(--gold); color: white; border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; }
-        .btn-group { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 15px; }
-        .btn-opt { padding: 8px; background: #27272a; border: 1px solid var(--border); color: #a1a1aa; cursor: pointer; border-radius: 4px; font-size: 0.8rem; }
-        .btn-opt.active { background: var(--gold); color: black; border-color: var(--gold); }
+        .input-field { width: 100%; padding: 12px; background: #27272a; border: 1px solid var(--gold); color: white; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 4px; margin-bottom: 15px; flex-wrap: wrap; }
+        .btn-opt { flex: 1; padding: 8px; background: #27272a; border: 1px solid var(--border); color: #a1a1aa; cursor: pointer; border-radius: 4px; font-size: 0.85rem; min-width: 40px; }
+        .btn-opt.active { background: var(--gold); color: black; border-color: var(--gold); font-weight: bold; }
 
-        /* Item Display */
+        /* Preview */
         .item-preview { text-align: center; margin-bottom: 20px; padding: 20px; background: #0c0c0e; border-radius: 12px; border: 1px solid var(--border); }
-        .item-img { width: 120px; height: 120px; object-fit: contain; }
+        .item-img { width: 120px; height: 120px; filter: drop-shadow(0 0 10px rgba(201, 156, 92, 0.3)); }
 
-        /* Table Styling */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; color: var(--gold); font-size: 0.8rem; text-transform: uppercase; padding: 10px; border-bottom: 1px solid var(--border); }
-        td { padding: 12px 10px; border-bottom: 1px solid var(--border); }
-        input[type="number"] { width: 100%; padding: 8px; background: #0c0c0e; border: 1px solid var(--border); color: white; border-radius: 4px; }
+        /* Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; color: var(--gold); font-size: 0.75rem; text-transform: uppercase; padding: 10px; border-bottom: 1px solid var(--border); }
+        td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        .num-input { width: 100%; padding: 8px; background: #0c0c0e; border: 1px solid var(--border); color: white; border-radius: 4px; text-align: right; }
         
-        .result-panel { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        /* Results */
+        .result-panel { margin-top: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .stat-card { background: #0c0c0e; padding: 15px; border-radius: 8px; border-left: 4px solid var(--gold); }
         .profit-pos { color: #22c55e; } .profit-neg { color: #ef4444; }
+        .header-label { font-size: 0.8rem; color: #a1a1aa; margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
 
-    <div class="main-container">
-        <div class="sidebar">
-            <label>ค้นหาไอเทม (ภาษาอังกฤษ)</label>
-            <input type="text" id="searchInput" class="search-box" placeholder="เช่น Bow, Sword, Axe..." oninput="updateUI()">
-            
-            <label>Tier</label>
-            <div class="btn-group" id="tierGroup">
-                <button class="btn-opt" onclick="setVal('tier', 4)">4</button>
-                <button class="btn-opt" onclick="setVal('tier', 5)">5</button>
-                <button class="btn-opt" onclick="setVal('tier', 6)">6</button>
-                <button class="btn-opt" onclick="setVal('tier', 7)">7</button>
-                <button class="btn-opt active" onclick="setVal('tier', 8)">8</button>
-            </div>
-
-            <label>Enchantment</label>
-            <div class="btn-group" id="enchantGroup">
-                <button class="btn-opt active" onclick="setVal('enchant', 0)">.0</button>
-                <button class="btn-opt" onclick="setVal('enchant', 1)">.1</button>
-                <button class="btn-opt" onclick="setVal('enchant', 2)">.2</button>
-                <button class="btn-opt" onclick="setVal('enchant', 3)">.3</button>
-                <button class="btn-opt" onclick="setVal('enchant', 4)">.4</button>
-            </div>
-
-            <label>Premium Status</label>
-            <select id="premium" class="search-box" onchange="updateUI()">
-                <option value="4">Premium (Tax 4%)</option>
-                <option value="8">No Premium (Tax 8%)</option>
-            </select>
-
-            <label>Return Rate (RRR %)</label>
-            <input type="number" id="rrr" class="search-box" value="15.2" step="0.1" oninput="updateUI()">
+<div class="container">
+    <div class="panel">
+        <label class="header-label">ค้นหาไอเทม (พิมพ์ชื่ออังกฤษ)</label>
+        <input type="text" id="search" class="input-field" placeholder="เช่น Bow, Sword, Druidic..." oninput="updateAll()">
+        
+        <label class="header-label">เลือก Tier</label>
+        <div class="btn-group" id="tierGroup">
+            <button class="btn-opt" onclick="updateState('tier', 4)">4</button>
+            <button class="btn-opt" onclick="updateState('tier', 5)">5</button>
+            <button class="btn-opt" onclick="updateState('tier', 6)">6</button>
+            <button class="btn-opt" onclick="updateState('tier', 7)">7</button>
+            <button class="btn-opt active" onclick="updateState('tier', 8)">8</button>
         </div>
 
-        <div class="content">
-            <div class="item-preview">
-                <img id="itemImg" src="" class="item-img" alt="Item Preview">
-                <h3 id="itemNameDisplay" style="margin: 10px 0 0 0; color: var(--gold);">เลือกไอเทม</h3>
+        <label class="header-label">Enchantment</label>
+        <div class="btn-group" id="enchantGroup">
+            <button class="btn-opt active" onclick="updateState('enchant', 0)">.0</button>
+            <button class="btn-opt" onclick="updateState('enchant', 1)">.1</button>
+            <button class="btn-opt" onclick="updateState('enchant', 2)">.2</button>
+            <button class="btn-opt" onclick="updateState('enchant', 3)">.3</button>
+            <button class="btn-opt" onclick="updateState('enchant', 4)">.4</button>
+        </div>
+
+        <label class="header-label">Premium Status</label>
+        <select id="premium" class="input-field" onchange="updateAll()">
+            <option value="0.04">Premium (ภาษี 4%)</option>
+            <option value="0.08">No Premium (ภาษี 8%)</option>
+        </select>
+
+        <label class="header-label">Return Rate (RRR %)</label>
+        <input type="number" id="rrr" class="input-field" value="15.2" step="0.1" oninput="updateAll()">
+    </div>
+
+    <div class="panel">
+        <div class="item-preview">
+            <img id="itemImg" src="" class="item-img" onerror="this.src='https://render.albiononline.com/v1/item/T4_TRASH.png'">
+            <h2 id="itemName" style="margin: 10px 0 0 0; color: var(--gold);">ไม่พบข้อมูลไอเทม</h2>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Material</th>
+                    <th style="width: 20%;">Qty</th>
+                    <th style="width: 20%;">Price (Silver)</th>
+                    <th style="width: 20%;">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody id="recipeTable">
+                </tbody>
+        </table>
+
+        <div style="margin-top: 25px;">
+            <label class="header-label">Market Sell Price (ราคาขายที่ตลาด)</label>
+            <input type="number" id="marketPrice" class="input-field" style="font-size: 1.2rem; height: 50px;" value="0" oninput="updateAll()">
+        </div>
+
+        <div class="result-panel">
+            <div class="stat-card">
+                <span class="header-label">Total Cost (หลังหักคืนของ)</span>
+                <div id="totalCost" style="font-size: 1.4rem; font-weight: bold;">0</div>
             </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Material</th>
-                        <th>Amount (Pcs)</th>
-                        <th>Price (per Pcs)</th>
-                        <th>Total (Effective)</th>
-                    </tr>
-                </thead>
-                <tbody id="recipeBody">
-                    </tbody>
-            </table>
-
-            <div style="margin-top: 20px;">
-                <label>Sell Price (Market)</label>
-                <input type="number" id="sellPrice" class="search-box" style="margin-top: 5px;" value="0" oninput="updateUI()">
-            </div>
-
-            <div class="result-panel">
-                <div class="stat-card">
-                    <small>Net Profit</small>
-                    <div id="netProfit" class="profit-pos" style="font-size: 1.5rem; font-weight: bold;">0</div>
-                </div>
-                <div class="stat-card">
-                    <small>Profit Margin</small>
-                    <div id="profitMargin" class="profit-pos" style="font-size: 1.5rem; font-weight: bold;">0%</div>
-                </div>
+            <div class="stat-card">
+                <span class="header-label">Net Profit (กำไรสุทธิ)</span>
+                <div id="netProfit" style="font-size: 1.4rem; font-weight: bold;">0</div>
             </div>
         </div>
     </div>
+</div>
 
 <script>
-    // ฐานข้อมูลสูตรคราฟต์ (ตัวอย่าง)
-    const db = {
-        "bow": { id: "BOW", res1: "Plank", n1: 32, art: null },
-        "sword": { id: "MAIN_SWORD", res1: "Steel Bar", n1: 16, res2: "Leather", n2: 8, art: null },
-        "druidic staff": { id: "MAIN_ARCANESTAFF_GATHERER", res1: "Plank", n1: 16, art: "Wildfire Core", na: 1 },
-        "soldier helmet": { id: "HEAD_PLATE_SET1", res1: "Steel Bar", n1: 8, art: null }
-    };
+    // ฐานข้อมูลสูตรคราฟต์
+    const itemDB = [
+        { id: "BOW", name: "Bow", res1: "Plank", n1: 32 },
+        { id: "MAIN_SWORD", name: "Broadsword", res1: "Steel Bar", n1: 16, res2: "Leather", n2: 8 },
+        { id: "MAIN_AXE", name: "Battleaxe", res1: "Steel Bar", n1: 16, res2: "Plank", n2: 8 },
+        { id: "2H_DUALAXE_KEEPER", name: "Bear Paws", res1: "Steel Bar", n1: 20, res2: "Plank", n2: 12, art: "Keeper Urn" },
+        { id: "MAIN_ARCANESTAFF_GATHERER", name: "Druidic Staff", res1: "Plank", n1: 16, art: "Wildfire Core" },
+        { id: "HEAD_PLATE_SET1", name: "Soldier Helmet", res1: "Steel Bar", n1: 8 }
+    ];
 
-    let state = { tier: 8, enchant: 0, query: "" };
+    let current = { tier: 8, enchant: 0 };
 
-    function setVal(key, val) {
-        state[key] = val;
-        const group = document.getElementById(key + 'Group');
-        Array.from(group.children).forEach((btn, i) => {
-            btn.classList.toggle('active', (key === 'tier' ? val === (i+4) : val === i));
-        });
-        updateUI();
+    function updateState(key, val) {
+        current[key] = val;
+        const btns = document.querySelectorAll(`#${key}Group .btn-opt`);
+        btns.forEach(b => b.classList.remove('active'));
+        const activeIdx = (key === 'tier') ? val - 4 : val;
+        btns[activeIdx].classList.add('active');
+        updateAll();
     }
 
-    function updateUI() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const recipe = db[query];
+    function updateAll() {
+        const query = document.getElementById('search').value.toLowerCase();
+        const item = itemDB.find(i => i.name.toLowerCase().includes(query) || i.id.toLowerCase().includes(query));
+        
         const rrr = parseFloat(document.getElementById('rrr').value) / 100;
-        const tax = parseFloat(document.getElementById('premium').value) / 100;
-        const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+        const tax = parseFloat(document.getElementById('premium').value);
+        const marketPrice = parseFloat(document.getElementById('marketPrice').value) || 0;
 
-        if (recipe) {
-            // อัปเดตรูปภาพ
-            const enchantSuffix = state.enchant > 0 ? `@${state.enchant}` : "";
-            const itemID = `T${state.tier}_${recipe.id}${enchantSuffix}`;
-            document.getElementById('itemImg').src = `https://render.albiononline.com/v1/item/${itemID}.png`;
-            document.getElementById('itemNameDisplay').innerText = `Tier ${state.tier} ${query.toUpperCase()}`;
-
-            // สร้างตารางสูตร
-            let html = `<tr><td>${recipe.res1}</td><td>${recipe.n1}</td><td><input type="number" id="cost1" value="500" oninput="updateUI()"></td><td id="total1">0</td></tr>`;
-            if (recipe.res2) {
-                html += `<tr><td>${recipe.res2}</td><td>${recipe.n2}</td><td><input type="number" id="cost2" value="0" oninput="updateUI()"></td><td id="total2">0</td></tr>`;
-            }
-            if (recipe.art) {
-                html += `<tr><td style="color:var(--gold)">${recipe.art} (Artifact)</td><td>${recipe.na}</td><td><input type="number" id="costA" value="0" oninput="updateUI()"></td><td id="totalA">0</td></tr>`;
-            }
-            document.getElementById('recipeBody').innerHTML = html;
-
-            // คำนวณราคา
-            const c1 = (parseFloat(document.getElementById('cost1')?.value) || 0) * recipe.n1 * (1-rrr);
-            const c2 = recipe.res2 ? (parseFloat(document.getElementById('cost2')?.value) || 0) * recipe.n2 * (1-rrr) : 0;
-            const cA = recipe.art ? (parseFloat(document.getElementById('costA')?.value) || 0) * recipe.na : 0; // Artifact NO RRR
-
-            const totalCost = c1 + c2 + cA;
-            const netRevenue = sellPrice * (1 - tax);
-            const profit = netRevenue - totalCost;
-            const margin = totalCost > 0 ? (profit / totalCost) * 100 : 0;
-
-            // แสดงผล
-            if(document.getElementById('total1')) document.getElementById('total1').innerText = Math.floor(c1).toLocaleString();
-            if(document.getElementById('total2')) document.getElementById('total2').innerText = Math.floor(c2).toLocaleString();
-            if(document.getElementById('totalA')) document.getElementById('totalA').innerText = Math.floor(cA).toLocaleString();
-            
-            const profitEl = document.getElementById('netProfit');
-            profitEl.innerText = Math.floor(profit).toLocaleString() + " Silver";
-            profitEl.className = profit >= 0 ? "profit-pos" : "profit-neg";
-
-            const marginEl = document.getElementById('profitMargin');
-            marginEl.innerText = margin.toFixed(2) + "%";
-            marginEl.className = profit >= 0 ? "profit-pos" : "profit-neg";
+        if (!item) {
+            document.getElementById('itemName').innerText = "ค้นหาชื่อไอเทม...";
+            document.getElementById('recipeTable').innerHTML = "";
+            return;
         }
+
+        // 1. อัปเดตรูปภาพ
+        const enchantStr = current.enchant > 0 ? `@${current.enchant}` : "";
+        const fullID = `T${current.tier}_${item.id}${enchantStr}`;
+        document.getElementById('itemImg').src = `https://render.albiononline.com/v1/item/${fullID}.png`;
+        document.getElementById('itemName').innerText = `Tier ${current.tier}.${current.enchant} ${item.name}`;
+
+        // 2. สร้างแถวตารางสูตร
+        let tableHTML = "";
+        const createRow = (label, qty, id) => `
+            <tr>
+                <td>${label}</td>
+                <td>${qty}</td>
+                <td><input type="number" id="${id}" class="num-input" value="0" oninput="calculate()"></td>
+                <td id="${id}_total" style="text-align:right">0</td>
+            </tr>`;
+
+        tableHTML += createRow(item.res1, item.n1, 'p1');
+        if (item.res2) tableHTML += createRow(item.res2, item.n2, 'p2');
+        if (item.art) tableHTML += createRow(item.art + " (Artifact)", 1, 'pA');
+        
+        document.getElementById('recipeTable').innerHTML = tableHTML;
+        calculate();
     }
-    updateUI();
+
+    function calculate() {
+        const query = document.getElementById('search').value.toLowerCase();
+        const item = itemDB.find(i => i.name.toLowerCase().includes(query) || i.id.toLowerCase().includes(query));
+        if (!item) return;
+
+        const rrr = parseFloat(document.getElementById('rrr').value) / 100;
+        const tax = parseFloat(document.getElementById('premium').value);
+        const marketPrice = parseFloat(document.getElementById('marketPrice').value) || 0;
+
+        const val1 = parseFloat(document.getElementById('p1').value) || 0;
+        const val2 = document.getElementById('p2') ? parseFloat(document.getElementById('p2').value) || 0 : 0;
+        const valA = document.getElementById('pA') ? parseFloat(document.getElementById('pA').value) || 0 : 0;
+
+        // คำนวณแยก (Artifact ไม่ได้ RRR)
+        const cost1 = (val1 * item.n1) * (1 - rrr);
+        const cost2 = item.res2 ? (val2 * item.n2) * (1 - rrr) : 0;
+        const costA = item.art ? (valA * 1) : 0;
+
+        const totalCost = cost1 + cost2 + costA;
+        const profit = (marketPrice * (1 - tax)) - totalCost;
+
+        // แสดงผลลัพธ์
+        if (document.getElementById('p1_total')) document.getElementById('p1_total').innerText = Math.floor(cost1).toLocaleString();
+        if (document.getElementById('p2_total')) document.getElementById('p2_total').innerText = Math.floor(cost2).toLocaleString();
+        if (document.getElementById('pA_total')) document.getElementById('pA_total').innerText = Math.floor(costA).toLocaleString();
+        
+        document.getElementById('totalCost').innerText = Math.floor(totalCost).toLocaleString();
+        
+        const profitEl = document.getElementById('netProfit');
+        profitEl.innerText = Math.floor(profit).toLocaleString();
+        profitEl.className = profit >= 0 ? "profit-pos" : "profit-neg";
+    }
+
+    // เริ่มต้นหน้าเว็บ
+    updateAll();
 </script>
+
 </body>
 </html>
