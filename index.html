@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Albion Crafting Professional Calculator</title>
+    <style>
+        :root { --gold: #c99c5c; --bg: #121212; --card: #1e1e1e; --border: #333; --text: #e0e0e0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        .calc-table { border-collapse: collapse; background: var(--card); border: 1px solid var(--border); width: 100%; max-width: 1000px; }
+        .calc-table td, .calc-table th { border: 1px solid var(--border); padding: 12px; text-align: center; }
+        .header-bg { background: #252525; color: var(--gold); font-weight: bold; font-size: 0.9rem; }
+        input, select { width: 90%; padding: 8px; background: #2a2a2a; border: 1px solid var(--gold); color: white; border-radius: 4px; text-align: center; }
+        .res-box { font-size: 1.2rem; font-weight: bold; background: #1a1a1a; padding: 10px; border-radius: 4px; color: var(--gold); }
+        .profit-pos { color: #27ae60; }
+        .profit-neg { color: #c0392b; }
+        h2 { color: var(--gold); text-align: center; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div style="width: 100%; max-width: 1000px;">
+    <h2>⚒️ Albion Professional Calculator</h2>
+    
+    <table class="calc-table">
+        <tr>
+            <td class="header-bg">Tier / Enchant</td>
+            <td>
+                <select id="tier">
+                    <option>Tier 4</option><option>Tier 5</option><option>Tier 6</option><option selected>Tier 7</option><option>Tier 8</option>
+                </select>
+            </td>
+            <td class="header-bg">Usage Fee (Silver)</td>
+            <td><input type="number" id="stationFee" value="1000" oninput="calc()"></td>
+            <td colspan="2" class="header-bg">Result Summary</td>
+        </tr>
+        <tr>
+            <td class="header-bg">Active Premium?</td>
+            <td>
+                <select id="premium" onchange="calc()">
+                    <option value="4" selected>Yes (Tax 4%)</option>
+                    <option value="8">No (Tax 8%)</option>
+                </select>
+            </td>
+            <td class="header-bg">Return Rate (%)</td>
+            <td><input type="number" id="rrr" value="15.2" step="0.1" oninput="calc()"></td>
+            <td class="header-bg">Total Cost</td>
+            <td class="res-box" id="totalCostDisplay">0</td>
+        </tr>
+
+        <tr class="header-bg">
+            <td>Type</td>
+            <td>Price (per pcs)</td>
+            <td>Amount (Pcs)</td>
+            <td>Returnable?</td>
+            <td class="header-bg">Sell Price (Market)</td>
+            <td class="header-bg">% Profit</td>
+        </tr>
+
+        <tr>
+            <td>Resource 1</td>
+            <td><input type="number" id="p1" value="500" oninput="calc()"></td>
+            <td><input type="number" id="n1" value="16" oninput="calc()"></td>
+            <td style="color: #27ae60;">YES</td>
+            <td rowspan="3"><input type="number" id="sellPrice" value="50000" style="font-size: 1.2rem; height: 40px;" oninput="calc()"></td>
+            <td rowspan="3" id="profitPercent" class="res-box">0%</td>
+        </tr>
+
+        <tr>
+            <td>Resource 2</td>
+            <td><input type="number" id="p2" value="0" oninput="calc()"></td>
+            <td><input type="number" id="n2" value="0" oninput="calc()"></td>
+            <td style="color: #27ae60;">YES</td>
+        </tr>
+
+        <tr>
+            <td>Artifact</td>
+            <td><input type="number" id="pa" value="5000" oninput="calc()"></td>
+            <td><input type="number" id="na" value="1" oninput="calc()"></td>
+            <td style="color: #c0392b;">NO</td>
+        </tr>
+        
+        <tr>
+            <td colspan="4" class="header-bg" style="text-align: right;">Net Profit (Silver) :</td>
+            <td colspan="2" id="netProfit" class="res-box" style="font-size: 1.5rem;">0</td>
+        </tr>
+    </table>
+</div>
+
+<script>
+function calc() {
+    // ดึงค่า Input
+    const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+    const taxRate = parseFloat(document.getElementById('premium').value) / 100;
+    const rrr = parseFloat(document.getElementById('rrr').value) / 100;
+    const stationFee = parseFloat(document.getElementById('stationFee').value) || 0;
+
+    // ราคาสินค้าแต่ละอย่าง
+    const p1 = parseFloat(document.getElementById('p1').value) || 0;
+    const n1 = parseFloat(document.getElementById('n1').value) || 0;
+    const p2 = parseFloat(document.getElementById('p2').value) || 0;
+    const n2 = parseFloat(document.getElementById('n2').value) || 0;
+    const pa = parseFloat(document.getElementById('pa').value) || 0;
+    const na = parseFloat(document.getElementById('na').value) || 0;
+
+    // คำนวณต้นทุน
+    // Resource 1 & 2 ได้รับ RRR
+    const costResources = ((p1 * n1) + (p2 * n2)) * (1 - rrr);
+    // Artifact ไม่ได้รับ RRR
+    const costArtifact = (pa * na);
+    
+    const totalCost = costResources + costArtifact + stationFee;
+
+    // คำนวณรายรับ (หักภาษี)
+    const netRevenue = sellPrice * (1 - taxRate);
+
+    // คำนวณกำไร
+    const profit = netRevenue - totalCost;
+    const margin = totalCost > 0 ? (profit / totalCost) * 100 : 0;
+
+    // แสดงผล
+    document.getElementById('totalCostDisplay').innerText = Math.floor(totalCost).toLocaleString();
+    
+    const netProfitEl = document.getElementById('netProfit');
+    netProfitEl.innerText = Math.floor(profit).toLocaleString();
+    netProfitEl.className = profit >= 0 ? 'res-box profit-pos' : 'res-box profit-neg';
+
+    const marginEl = document.getElementById('profitPercent');
+    marginEl.innerText = margin.toFixed(2) + '%';
+    marginEl.className = profit >= 0 ? 'res-box profit-pos' : 'res-box profit-neg';
+}
+
+// รันครั้งแรก
+calc();
+</script>
+
+</body>
+</html>
